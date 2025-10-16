@@ -4,14 +4,19 @@ export interface Event {
   description: string
   category: EventCategory
   imageUrl?: string
-  date?: Date
+  date?: string
   location?: string
   organizer?: string
   isVerified?: boolean
   readTime: number
+  status?: EventStatus
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type EventCategory = 'free-food' | 'music' | 'cultural' | 'study' | 'sports'
+
+export type EventStatus = 'draft' | 'published'
 
 export interface User {
   id: string

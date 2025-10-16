@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SearchFilterPanel } from "./search-filter-panel";
 import Link from "next/link";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { RxChevronRight } from "react-icons/rx";
 import { Event } from "@/types";
+import { EventsService } from "@/lib/events";
 
 interface EventFeedProps {
   events?: Event[];
@@ -16,6 +17,7 @@ interface EventFeedProps {
 export function EventFeed({ events = [] }: EventFeedProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [publishedEvents, setPublishedEvents] = useState<Event[]>([]);
 
   const handleEventClick = (e: React.MouseEvent) => {
     // Prevent event bubbling to avoid triggering mobile menu
@@ -74,7 +76,26 @@ export function EventFeed({ events = [] }: EventFeedProps) {
     }
   ];
 
-  const displayEvents = events.length > 0 ? events : defaultEvents;
+  useEffect(() => {
+    // Load published events from local storage
+    const stored = EventsService.listPublished();
+    setPublishedEvents(stored);
+  }, []);
+
+  // Merge published events (user-created) with defaults
+  const displayEvents: Event[] = useMemo(() => {
+    const combined = [...publishedEvents, ...(events.length > 0 ? events : defaultEvents)];
+    const dedupedById = new Map<string, Event>();
+    for (const ev of combined) {
+      dedupedById.set(ev.id, ev);
+    }
+    // Show newest first if metadata exists
+    return Array.from(dedupedById.values()).sort((a, b) => {
+      const aTime = a.createdAt ? Date.parse(a.createdAt) : 0;
+      const bTime = b.createdAt ? Date.parse(b.createdAt) : 0;
+      return bTime - aTime;
+    });
+  }, [publishedEvents, events]);
 
   // Filter and search logic
   const filteredEvents = useMemo(() => {

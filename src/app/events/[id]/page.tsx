@@ -1,3 +1,5 @@
+import { EventsService } from "@/lib/events";
+import { Event } from "@/types";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Badge } from "@/components/ui/badge";
@@ -13,19 +15,21 @@ interface EventDetailPageProps {
 }
 
 export default function EventDetailPage({ params }: EventDetailPageProps) {
-  // Mock event data - in a real app, this would come from an API
-  const event = {
+  // Try to load the event from local storage first, else show a lightweight fallback
+  const stored = EventsService.getById(params.id);
+  const event: Event = stored || {
     id: params.id,
-    title: "Free Tacos night at student center",
-    description: "Join hundreds of students for a night of free food and networking. This is a great opportunity to meet new people, enjoy delicious tacos, and learn about campus organizations.",
-    category: "free-food" as const,
-    imageUrl: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop&crop=center",
-    date: new Date("2024-02-15T18:00:00"),
+    title: "Campus Event",
+    description: "Details for this event are not available locally. This is a sample event.",
+    category: "cultural",
+    imageUrl: "https://d22po4pjz3o32e.cloudfront.net/placeholder-image-landscape.svg",
+    date: new Date().toISOString(),
     location: "Student Center, Main Hall",
     organizer: "Campus Activities Board",
     isVerified: true,
-    readTime: 5,
-  };
+    readTime: 4,
+    status: "published",
+  } as Event;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -79,15 +83,12 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Date & Time</h3>
                       <p className="text-gray-600">
-                        {event.date.toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })} at {event.date.toLocaleTimeString('en-US', { 
-                          hour: 'numeric', 
-                          minute: '2-digit' 
-                        })}
+                        {event.date ? new Date(event.date).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 'TBD'}
                       </p>
                     </div>
                     <div>
