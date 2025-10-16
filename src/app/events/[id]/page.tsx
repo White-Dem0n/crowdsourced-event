@@ -1,3 +1,4 @@
+"use client";
 import { EventsService } from "@/lib/events";
 import { Event } from "@/types";
 import { Navbar } from "@/components/layout/navbar";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { RxChevronLeft, RxChevronRight } from "react-icons/rx";
+import React from "react";
 
 interface EventDetailPageProps {
   params: {
@@ -15,21 +17,28 @@ interface EventDetailPageProps {
 }
 
 export default function EventDetailPage({ params }: EventDetailPageProps) {
-  // Try to load the event from local storage first, else show a lightweight fallback
-  const stored = EventsService.getById(params.id);
-  const event: Event = stored || {
-    id: params.id,
-    title: "Campus Event",
-    description: "Details for this event are not available locally. This is a sample event.",
-    category: "cultural",
-    imageUrl: "https://d22po4pjz3o32e.cloudfront.net/placeholder-image-landscape.svg",
-    date: new Date().toISOString(),
-    location: "Student Center, Main Hall",
-    organizer: "Campus Activities Board",
-    isVerified: true,
-    readTime: 4,
-    status: "published",
-  } as Event;
+  const [event, setEvent] = React.useState<Event | null>(null);
+
+  React.useEffect(() => {
+    const stored = EventsService.getById(params.id);
+    if (stored) {
+      setEvent(stored);
+    } else {
+      setEvent({
+        id: params.id,
+        title: "Campus Event",
+        description: "Details for this event are not available locally. This is a sample event.",
+        category: "cultural",
+        imageUrl: "https://d22po4pjz3o32e.cloudfront.net/placeholder-image-landscape.svg",
+        date: new Date().toISOString(),
+        location: "Student Center, Main Hall",
+        organizer: "Campus Activities Board",
+        isVerified: true,
+        readTime: 4,
+        status: "published",
+      } as Event);
+    }
+  }, [params.id]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,21 +59,21 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
             <div className="lg:col-span-2">
               <Card className="overflow-hidden border-0 shadow-lg">
                 <img
-                  src={event.imageUrl}
-                  alt={event.title}
+                  src={event?.imageUrl || "https://d22po4pjz3o32e.cloudfront.net/placeholder-image-landscape.svg"}
+                  alt={event?.title || "Event"}
                   className="w-full h-64 md:h-80 object-cover"
                 />
                 <div className="p-6 md:p-8">
                   <div className="mb-4 flex items-center gap-4">
                     <Badge className={`capitalize ${
-                      event.category === 'free-food' ? 'bg-orange-100 text-orange-800' :
-                      event.category === 'sports' ? 'bg-green-100 text-green-800' :
-                      event.category === 'cultural' ? 'bg-purple-100 text-purple-800' :
+                      event?.category === 'free-food' ? 'bg-orange-100 text-orange-800' :
+                      event?.category === 'sports' ? 'bg-green-100 text-green-800' :
+                      event?.category === 'cultural' ? 'bg-purple-100 text-purple-800' :
                       'bg-blue-100 text-blue-800'
                     }`}>
-                      {event.category.replace('-', ' ')}
+                      {event ? event.category.replace('-', ' ') : 'event'}
                     </Badge>
-                    {event.isVerified && (
+                    {event?.isVerified && (
                       <Badge className="bg-green-100 text-green-800">
                         ✓ Verified
                       </Badge>
@@ -72,18 +81,18 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
                   </div>
                   
                   <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                    {event.title}
+                    {event?.title || 'Event'}
                   </h1>
                   
                   <p className="text-lg text-gray-600 mb-6">
-                    {event.description}
+                    {event?.description || 'Details coming soon.'}
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Date & Time</h3>
                       <p className="text-gray-600">
-                        {event.date ? new Date(event.date).toLocaleDateString('en-US', {
+                        {event?.date ? new Date(event.date).toLocaleDateString('en-US', {
                           weekday: 'long',
                           year: 'numeric',
                           month: 'long',
@@ -93,15 +102,15 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Location</h3>
-                      <p className="text-gray-600">{event.location}</p>
+                      <p className="text-gray-600">{event?.location || 'TBD'}</p>
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Organizer</h3>
-                      <p className="text-gray-600">{event.organizer}</p>
+                      <p className="text-gray-600">{event?.organizer || 'TBD'}</p>
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Read Time</h3>
-                      <p className="text-gray-600">{event.readTime} minutes</p>
+                      <p className="text-gray-600">{event?.readTime ?? 3} minutes</p>
                     </div>
                   </div>
 
