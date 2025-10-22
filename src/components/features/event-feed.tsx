@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { BookingModal } from "@/components/ui/booking-modal";
 import { SearchFilterPanel } from "./search-filter-panel";
 import Link from "next/link";
 import React, { useState, useMemo, useEffect } from "react";
@@ -18,6 +19,8 @@ export function EventFeed({ events = [] }: EventFeedProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [publishedEvents, setPublishedEvents] = useState<Event[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   const handleEventClick = (e: React.MouseEvent) => {
     // Prevent event bubbling to avoid triggering mobile menu
@@ -132,6 +135,13 @@ export function EventFeed({ events = [] }: EventFeedProps) {
     setSelectedFilters([]);
   };
 
+  const handleBookEvent = (event: Event, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedEvent(event);
+    setIsBookingModalOpen(true);
+  };
+
   return (
     <div className="relative z-10">
       {/* Search and Filter Panel */}
@@ -198,17 +208,25 @@ export function EventFeed({ events = [] }: EventFeedProps) {
                   </h2>
                 </Link>
                 <p className="text-gray-600 flex-1 mb-4">{event.description}</p>
-                <Link href={`/events/${event.id}`}>
+                <div className="flex gap-2 mt-auto">
                   <Button
-                    title="Read more"
-                    variant="link"
-                    size="link"
-                    iconRight={<RxChevronRight />}
-                    className="mt-auto flex items-center justify-start gap-x-2 text-blue-600 hover:text-blue-700 p-0 h-auto"
+                    onClick={(e) => handleBookEvent(event, e)}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2"
                   >
-                    Read more
+                    Book Event
                   </Button>
-                </Link>
+                  <Link href={`/events/${event.id}`} className="flex-1">
+                    <Button
+                      title="Read more"
+                      variant="outline"
+                      size="sm"
+                      iconRight={<RxChevronRight />}
+                      className="w-full flex items-center justify-center gap-x-2 text-blue-600 hover:text-blue-700"
+                    >
+                      Details
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </Card>
             ))}
@@ -239,6 +257,20 @@ export function EventFeed({ events = [] }: EventFeedProps) {
         </div>
       </div>
     </section>
+    
+    {/* Booking Modal */}
+    <BookingModal
+      event={selectedEvent}
+      isOpen={isBookingModalOpen}
+      onClose={() => {
+        setIsBookingModalOpen(false);
+        setSelectedEvent(null);
+      }}
+      onConfirm={() => {
+        // Handle booking confirmation
+        console.log('Event booked:', selectedEvent?.title);
+      }}
+    />
     </div>
   );
 }

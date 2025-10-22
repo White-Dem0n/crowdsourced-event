@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { BookingModal } from "@/components/ui/booking-modal";
 import Link from "next/link";
 import { RxChevronLeft, RxChevronRight } from "react-icons/rx";
 import React from "react";
@@ -18,6 +19,7 @@ interface EventDetailPageProps {
 
 export default function EventDetailPage({ params }: EventDetailPageProps) {
   const [event, setEvent] = React.useState<Event | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
 
   React.useEffect(() => {
     const stored = EventsService.getById(params.id);
@@ -115,8 +117,11 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3">
-                      Join Event
+                    <Button 
+                      onClick={() => setIsBookingModalOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
+                    >
+                      Book Event
                     </Button>
                     <Button variant="outline" className="px-6 py-3">
                       Share Event
@@ -180,6 +185,17 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
         </div>
       </div>
       <Footer />
+      
+      {/* Booking Modal */}
+      <BookingModal
+        event={event}
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        onConfirm={() => {
+          // Handle booking confirmation
+          console.log('Event booked:', event?.title);
+        }}
+      />
     </div>
   );
 }
